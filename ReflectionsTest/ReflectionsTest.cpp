@@ -13,8 +13,9 @@ namespace ReflectionsTest
 	TEST_CLASS(ReflectionsTest)
 	{
 	public:
-		TEST_METHOD(TestMethodReflections_RA)
+		TEST_METHOD(TestMethodReflections_Radius_Angle)
 		{
+			// Проверяем корректность вычислений переотражений
 			const double EPSILON = 1e-10;
 			const int N = 5;
 			double fR = 10;
@@ -41,7 +42,7 @@ namespace ReflectionsTest
 					swprintf_s(buffer, L"%0.3f\t%0.3f\t%0.3f\t%0.3f\n", x, y, r, a / fPi180);
 					Logger::WriteMessage(buffer);
 					if(i==0)
-						Assert::IsTrue((v[0].x * sin(fA)) >= 0, L"Wrong direction.");
+						Assert::IsTrue((x * sin(fA)) >= 0, L"Wrong direction.");
 					Assert::IsTrue((abs(fR - r) < EPSILON) || (abs(fRS - r) < EPSILON), L"Wrong radius value.");
 					Assert::IsTrue((abs(a - abs(fA)) < EPSILON), L"Wrong angle value.");
 					r0 = r;
@@ -53,40 +54,37 @@ namespace ReflectionsTest
 		}
 		TEST_METHOD(TestMethodReflections_Throw)
 		{
+			// Проверяем появление исключений для некорректных значений параметров
 			struct Param
 			{
 				double fR;
 				double fS;
 				double fA;
 			};
-
-
 			Param vParams[] = { 
+				{10,0,0},
+				{10,10,0},
+				{6,10,0},
 				{10,6,-100},
 				{10,6,-90},
 				{10,6,90},
 				{10,6,100},
-				{10,0,0},
-				{10,10,0},
-				{6,10,0}
 			};
 			const int N = 5;
 			const double fPi180 = acos(-1) / 180;
 			wchar_t buffer[256];
-			for (int i = 0; i < N; i++)
+			for (Param& param:vParams)
 			{
 				vector<Point> v(N);
 				bool bOk = false;
 				try
 				{
-					swprintf_s(buffer, L"%0.3f\t%0.3f\t%0.3f\n", vParams[i].fR, vParams[i].fS, vParams[i].fA);
+					swprintf_s(buffer, L"%0.3f\t%0.3f\t%0.3f\n", param.fR, param.fS, param.fA);
 					Logger::WriteMessage(buffer);
-					Reflections(v, vParams[i].fR, vParams[i].fS, vParams[i].fA * fPi180);
-					for (int i = 0; i < N; i++)
+					Reflections(v, param.fR, param.fS, param.fA * fPi180);
+					for (int j = 0; j < N; j++)
 					{
-						double x = v[i].x;
-						double y = vParams[i].fR - v[i].z;
-						swprintf_s(buffer, L"\t%0.3f\t%0.3f\n", x, y);
+						swprintf_s(buffer, L"\t%0.3f\t%0.3f\n", v[j].x, param.fR - v[j].z);
 						Logger::WriteMessage(buffer);
 					}
 				}
